@@ -1,0 +1,1671 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Ambulance Victoria IVR API",
+    "description": "Definition of API calls avaiable to the customer IVR.",
+    "version": "0.0.1"
+  },
+  "tags": [
+    {
+      "name": "membership",
+      "description": "Membership management"
+    },
+    {
+      "name": "payment",
+      "description": "proceses to pay memberships or get detials of how its paid. Membership must be current or overdue."
+    },
+    {
+      "name": "members",
+      "description": "processes to manage members listed on a membership"
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "tags": [
+          "membership"
+        ],
+        "summary": "get basic detals of a membership",
+        "description": "returns basic membership details",
+        "operationId": "getMembership",
+        "parameters": [
+          {
+            "name": "membershipNumber",
+            "in": "query",
+            "description": "membership to get details for",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/membershipDetails"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Invalid input"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "membership"
+        ],
+        "summary": "create a membership",
+        "description": "create a new membership",
+        "operationId": "newMembership",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/fullMembership"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/membershipPaymentOutcome"
+          },
+          "405": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/{membershipNumber}": {
+      "get": {
+        "tags": [
+          "membership"
+        ],
+        "summary": "get basic detals of a membership",
+        "description": "returns basic membership details",
+        "operationId": "getMembershipByNum",
+        "parameters": [
+          {
+            "name": "membershipNumber",
+            "in": "path",
+            "description": "Number of membership to return",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sucessful Operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/membershipDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid Membership Number supplied"
+          },
+          "404": {
+            "description": "Membership not found"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "membership"
+        ],
+        "summary": "Reinstate a membership",
+        "description": "Reinstate a resigned membership",
+        "operationId": "reinstateMembership",
+        "parameters": [
+          {
+            "name": "membershipNumber",
+            "in": "path",
+            "description": "Number of membership to reinsate",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Details of membership to create and how to pay",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/fullMembership"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/membershipPaymentOutcome"
+          },
+          "405": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/members": {
+      "get": {
+        "tags": [
+          "members"
+        ],
+        "summary": "get list of members on membership",
+        "operationId": "getMembers",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "membershipGUID",
+            "schema": {
+              "type": "string"
+            },
+            "description": "membership to get members for",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sucessful Operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/members"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Invalid input"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "members"
+        ],
+        "summary": "Make changes to who is covered by the membership",
+        "description": "add/update/remove members",
+        "operationId": "changeMember",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "header",
+            "description": "session Id from Id check",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Array of members to make changes to",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/member"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucessful Operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/memberOutcome"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/idCheck": {
+      "post": {
+        "tags": [
+          "membership"
+        ],
+        "summary": "perform Id check for membership access",
+        "operationId": "idCheck",
+        "requestBody": {
+          "description": "Performs Id check for membership",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/idPoints"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucessful Operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sessionId"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/members/duplicateCheck": {
+      "post": {
+        "tags": [
+          "members"
+        ],
+        "summary": "perform Id check for membership access",
+        "operationId": "duplicateCheck\"",
+        "requestBody": {
+          "description": "Pet object that needs to be added to the store",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/personalDetails"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucessful Operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/duplicateDetails"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/receipt": {
+      "get": {
+        "tags": [
+          "payment"
+        ],
+        "summary": "get reciepts in date range",
+        "operationId": "getReceipt",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "startDate",
+            "description": "Start date to search for receipts",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "in": "query",
+            "name": "endDate",
+            "description": "End date to search for receipts",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/literatureOutcome"
+          },
+          "405": {
+            "description": "Invalid input"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "payment"
+        ],
+        "summary": "send reciepts by email in date range",
+        "description": "leave dates blank to send receipt for last payment, otherwise specify date range of payments to send receipts for. Note, this will raise a request to manually do this as a combined receipt literature stucture does not exist as a literature type yet.",
+        "operationId": "sendReceipt",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "startDate",
+            "description": "Start date to search for receipts",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "in": "query",
+            "name": "endDate",
+            "description": "end date to search for receipts",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/literatureOutcome"
+          },
+          "405": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/literature": {
+      "get": {
+        "tags": [
+          "misc"
+        ],
+        "summary": "Get list of literature sent within the date range of the given type",
+        "description": "a more relaxed version of the receipt endpoint that allows other literature to be retrieved",
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/literatureOutcome"
+          },
+          "405": {
+            "description": "Invalid input"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "misc"
+        ],
+        "summary": "send or reseond a literature item. Lifecycle literature can only be resent. FAQ literature can be generted from scratch.",
+        "description": "a more relaxed version of the receipt endpoint that allows other literature to be sent",
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/literatureOutcome"
+          },
+          "405": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/contactDetails": {
+      "get": {
+        "tags": [
+          "membership"
+        ],
+        "summary": "get contact details of memberhsip",
+        "operationId": "getContactDetails",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "header",
+            "description": "session Id from Id check",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "membershipGUID",
+            "in": "query",
+            "description": "membership to get contact info for",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sucessful Operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/contactDetails"
+                },
+                "examples": {
+                  "All": {
+                    "value": {
+                      "email": "test@test.com"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Invalid input"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "membership"
+        ],
+        "summary": "Set/Change contact details of membership",
+        "operationId": "updateContactDetails",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "header",
+            "description": "session Id from Id check",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "details to update membership with.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/contactDetails"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucessful Operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/contactDetailsOutcome"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/consolidate": {
+      "post": {
+        "tags": [
+          "membership"
+        ],
+        "summary": "Raise a request to join 2 memberships together",
+        "operationId": "requestConsolidation",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "header",
+            "description": "session Id from Id check",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Details of membrships to be merged",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/consolidationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucessful Operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/consolidationDetails"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Invalid input"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "membership"
+        ],
+        "summary": "confirm by other party the merging of the 2 memberhsips",
+        "operationId": "approveConsolidation",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "header",
+            "description": "session Id from second membership Id check",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "consolidation request to approve",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/consolidationDetails"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucessful Operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/consolidationOutcome"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/deconsolidate": {
+      "post": {
+        "tags": [
+          "membership"
+        ],
+        "summary": "Separate a membership into 2 memberships",
+        "operationId": "requestDeconsolidation",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "header",
+            "description": "session Id from Id check",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "details of members to deconsolidate and the membership to add them to",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/fullMembership"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/deconsolidationOutcome"
+          },
+          "405": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/resign": {
+      "post": {
+        "tags": [
+          "membership"
+        ],
+        "summary": "Resign the membership as of the specified date",
+        "operationId": "resignMembership",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "header",
+            "description": "session Id from Id check",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "details of resignation to perform",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/resignMembership"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucessful Operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/resignMembershipOutcome"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/pay/{membershipNumber}": {
+      "post": {
+        "tags": [
+          "payment"
+        ],
+        "summary": "perform renewal on membership",
+        "description": "Membership should be current or overdue to do this, If resigned follow reinstatement process",
+        "operationId": "payMembershipByNumber",
+        "parameters": [
+          {
+            "name": "membershipNumber",
+            "in": "path",
+            "description": "Number of membership to return",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Pet object that needs to be added to the store",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/paymentDetails"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/membershipPaymentOutcome"
+          },
+          "405": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/pay/recurring": {
+      "get": {
+        "tags": [
+          "payment"
+        ],
+        "summary": "get current setup for recurring payments",
+        "description": "Note, to see the current setup of recurring payments, ID check is required. This is nto required for just setting up dd detiails as setting up will not disclose private information.",
+        "operationId": "getRecurring",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "header",
+            "description": "session Id from Id check",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "query",
+            "name": "membershipGUID",
+            "description": "membership to get recurring details of",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sucessful Operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/cardRecurringDetails"
+                    },
+                    {
+                      "$ref": "#/components/schemas/bankRecurringDetails"
+                    }
+                  ],
+                  "discriminator": {
+                    "propertyName": "paymentChannel"
+                  }
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/pay/{membershipNumber}/recurring": {
+      "post": {
+        "tags": [
+          "payment"
+        ],
+        "summary": "setup recurring payments",
+        "description": "Membership should be current or overdue to do this, If resigned follow reinstatement process",
+        "operationId": "setupRecurring",
+        "parameters": [
+          {
+            "name": "membershipNumber",
+            "in": "path",
+            "description": "Number of membership to return",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Detials to setup recurring payments from",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/cardRecurringDetails"
+                  },
+                  {
+                    "$ref": "#/components/schemas/bankRecurringDetails"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "paymentChannel"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/membershipPaymentOutcome"
+          },
+          "405": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "address": {
+        "type": "object",
+        "properties": {
+          "street": {
+            "type": "string",
+            "example": "L 1 15 William street"
+          },
+          "suburb": {
+            "type": "string",
+            "example": "Melbourne"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "VIC",
+              "NSW",
+              "SA",
+              "QLD",
+              "ACT",
+              "TAS",
+              "WA",
+              "NT"
+            ]
+          },
+          "postCode": {
+            "type": "string",
+            "example": 3000
+          }
+        },
+        "required": [
+          "street",
+          "suburb",
+          "state",
+          "postCode"
+        ]
+      },
+      "mobile": {
+        "type": "string",
+        "format": "phoneNUmber"
+      },
+      "home": {
+        "type": "string",
+        "format": "phoneNUmber"
+      },
+      "work": {
+        "type": "string",
+        "format": "phoneNUmber"
+      },
+      "residentialAddress": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/address"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "dpid": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "postalAddress": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "sameAsResidential": {
+                "type": "boolean"
+              }
+            }
+          },
+          {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/address"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "dpid": {
+                    "type": "string"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "phoneNumbers": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/mobile"
+          },
+          {
+            "$ref": "#/components/schemas/home"
+          },
+          {
+            "$ref": "#/components/schemas/work"
+          }
+        ]
+      },
+      "email": {
+        "type": "string",
+        "format": "email"
+      },
+      "contactDetails": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "$ref": "#/components/schemas/email"
+          },
+          "residentialAddress": {
+            "$ref": "#/components/schemas/residentialAddress"
+          },
+          "postalAddress": {
+            "$ref": "#/components/schemas/postalAddress"
+          },
+          "phoneNumbers": {
+            "$ref": "#/components/schemas/phoneNumbers"
+          }
+        }
+      },
+      "membershipDetails": {
+        "type": "object",
+        "properties": {
+          "membershipNumber": {
+            "type": "integer",
+            "format": "int64",
+            "example": 10
+          },
+          "membershipType": {
+            "type": "string",
+            "enum": [
+              "Single",
+              "Family"
+            ]
+          },
+          "paymentMethod": {
+            "type": "string",
+            "enum": [
+              "One Off",
+              "Annual",
+              "Quarterly"
+            ]
+          },
+          "isCorporate": {
+            "type": "boolean"
+          },
+          "membershipStatus": {
+            "type": "string",
+            "enum": [
+              "Pending",
+              "Current",
+              "Overdue",
+              "Resigned"
+            ]
+          },
+          "membershipEndDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "tenure": {
+            "type": "integer",
+            "enum": [
+              0,
+              1,
+              3,
+              5
+            ]
+          },
+          "amount": {
+            "type": "string",
+            "format": "currency"
+          },
+          "sustContributionAmount": {
+            "type": "string",
+            "format": "currency"
+          },
+          "fees": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/fee"
+            }
+          }
+        }
+      },
+      "fee": {
+        "type": "object",
+        "properties": {
+          "tenure": {
+            "type": "integer",
+            "enum": [
+              0,
+              1,
+              3,
+              5
+            ]
+          },
+          "membershipType": {
+            "type": "string",
+            "enum": [
+              "Single",
+              "Family"
+            ]
+          },
+          "amount": {
+            "type": "string",
+            "format": "currency"
+          }
+        }
+      },
+      "fullMembership": {
+        "type": "object",
+        "properties": {
+          "membershipDetails": {
+            "$ref": "#/components/schemas/membershipDetails"
+          },
+          "members": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/member"
+            }
+          },
+          "contactDetails": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/contactDetails"
+              }
+            ],
+            "required": [
+              "email",
+              "residentialAddress",
+              "postalAddress",
+              "phoneNumbers"
+            ]
+          },
+          "paymentDetails": {
+            "$ref": "#/components/schemas/paymentDetails"
+          }
+        },
+        "required": [
+          "membershipDetails",
+          "members",
+          "contactDetails",
+          "paymentDetails"
+        ]
+      },
+      "personalDetails": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "example": "John"
+          },
+          "middleName": {
+            "type": "string",
+            "example": "Bob"
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Smith"
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "format": "date",
+            "example": "1987-04-12T00:00:00.000Z"
+          }
+        },
+        "required": [
+          "firstName",
+          "middleName",
+          "lastName",
+          "dateOfBirth"
+        ]
+      },
+      "member": {
+        "allOf": [
+          {
+            "type": "object",
+            "properties": {
+              "contactId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "title": {
+                "type": "string",
+                "enum": [
+                  "Mr",
+                  "Mrs"
+                ]
+              },
+              "gender": {
+                "type": "string",
+                "enum": [
+                  "Male",
+                  "Female",
+                  "Other"
+                ]
+              },
+              "relationship": {
+                "type": "string",
+                "enum": [
+                  "Primary",
+                  "Partner",
+                  "Child"
+                ]
+              },
+              "ftStudent": {
+                "type": "boolean"
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "eligible",
+                  "ineligible"
+                ]
+              }
+            }
+          },
+          {
+            "$ref": "#/components/schemas/personalDetails"
+          }
+        ],
+        "required": [
+          "title",
+          "gender",
+          "relationship",
+          "ftStudent"
+        ]
+      },
+      "members": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/member"
+        }
+      },
+      "memberOutcome": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "string"
+          },
+          "members": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/member"
+            }
+          }
+        }
+      },
+      "resendOutcome": {
+        "type": "object"
+      },
+      "idPoints": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/personalDetails"
+          },
+          {
+            "$ref": "#/components/schemas/email"
+          },
+          {
+            "$ref": "#/components/schemas/residentialAddress"
+          },
+          {
+            "$ref": "#/components/schemas/postalAddress"
+          },
+          {
+            "$ref": "#/components/schemas/phoneNumbers"
+          }
+        ]
+      },
+      "sessionId": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "duplicateDetails": {
+        "type": "object",
+        "properties": {
+          "outcome": {
+            "type": "string",
+            "example": "2 potential matches found"
+          },
+          "matches": {
+            "type": "array",
+            "items": {
+              "allOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "membershipId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                },
+                {
+                  "$ref": "#/components/schemas/member"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "contactDetailsOutcome": {
+        "type": "object"
+      },
+      "paymentDetails": {
+        "type": "object",
+        "properties": {
+          "referenceNumber": {
+            "type": "string",
+            "readOnly": true
+          },
+          "amount": {
+            "type": "string",
+            "format": "currency"
+          },
+          "tenure": {
+            "type": "integer",
+            "enum": [
+              0,
+              1,
+              3,
+              5
+            ]
+          },
+          "cardDetails": {
+            "$ref": "#/components/schemas/card"
+          },
+          "donation": {
+            "$ref": "#/components/schemas/donation"
+          },
+          "sustanabilityContrabution": {
+            "$ref": "#/components/schemas/sustanabilityContrabution"
+          }
+        }
+      },
+      "donation": {
+        "type": "object",
+        "properties": {
+          "referenceNumber": {
+            "type": "string",
+            "readOnly": true
+          },
+          "amount": {
+            "type": "string",
+            "format": "currency"
+          },
+          "cardDetails": {
+            "$ref": "#/components/schemas/card"
+          }
+        }
+      },
+      "sustanabilityContrabution": {
+        "type": "object",
+        "properties": {
+          "referenceNumber": {
+            "type": "string",
+            "readOnly": true
+          },
+          "amount": {
+            "type": "string",
+            "readOnly": true,
+            "format": "currency"
+          },
+          "cardDetails": {
+            "$ref": "#/components/schemas/card"
+          }
+        }
+      },
+      "resignMembership": {
+        "type": "object"
+      },
+      "resignMembershipOutcome": {
+        "type": "object"
+      },
+      "bank": {
+        "type": "object",
+        "properties": {
+          "accountName": {
+            "type": "string"
+          },
+          "bsb": {
+            "type": "string"
+          },
+          "accountNumber": {
+            "type": "string"
+          },
+          "bankName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "accountName",
+          "bsb",
+          "accountNumber",
+          "bankName"
+        ]
+      },
+      "card": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "writeOnly": true
+          },
+          "cardType": {
+            "type": "string",
+            "readOnly": true
+          },
+          "cardNumber": {
+            "type": "string",
+            "readOnly": true
+          },
+          "expiryMonth": {
+            "type": "string",
+            "readOnly": true
+          },
+          "expiryYear": {
+            "type": "string",
+            "readOnly": true
+          }
+        }
+      },
+      "recurringDetails": {
+        "type": "object",
+        "properties": {
+          "paymentMethod": {
+            "type": "string",
+            "enum": [
+              "Annual",
+              "Quarterly"
+            ]
+          },
+          "paymentChannel": {
+            "type": "string",
+            "enum": [
+              "bank",
+              "card"
+            ]
+          },
+          "paymentDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "donation": {
+            "$ref": "#/components/schemas/donation"
+          },
+          "sustanabilityContrabution": {
+            "$ref": "#/components/schemas/sustanabilityContrabution"
+          }
+        },
+        "discriminator": {
+          "propertyName": "paymentChannel"
+        },
+        "required": [
+          "paymentMethod",
+          "paymentChannel"
+        ]
+      },
+      "cardRecurringDetails": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/recurringDetails"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "cardDetails": {
+                "$ref": "#/components/schemas/card"
+              }
+            }
+          }
+        ]
+      },
+      "bankRecurringDetails": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/recurringDetails"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "bankDetails": {
+                "$ref": "#/components/schemas/bank"
+              }
+            }
+          }
+        ]
+      },
+      "literatureItem": {
+        "type": "object"
+      },
+      "consolidationRequest": {
+        "type": "object",
+        "properties": {
+          "keepingMembership": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "consolidatingMembership": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "newRelationshipTypeForPrimary": {
+            "type": "string",
+            "enum": [
+              "Partner",
+              "Child"
+            ]
+          }
+        }
+      },
+      "consolidationDetails": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string"
+          },
+          "requestAuthorised": {
+            "type": "boolean"
+          }
+        }
+      },
+      "consolidationOutcome": {
+        "type": "object",
+        "properties": {
+          "outcome": {
+            "type": "string"
+          },
+          "membershipDetails": {
+            "$ref": "#/components/schemas/membershipDetails"
+          },
+          "members": {
+            "$ref": "#/components/schemas/members"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ]
+      }
+    },
+    "requestBodies": {
+      "fullMembership": {
+        "description": "full details of the membership",
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/membershipDetails"
+                },
+                {
+                  "$ref": "#/components/schemas/members"
+                },
+                {
+                  "$ref": "#/components/schemas/email"
+                },
+                {
+                  "$ref": "#/components/schemas/residentialAddress"
+                },
+                {
+                  "$ref": "#/components/schemas/postalAddress"
+                },
+                {
+                  "$ref": "#/components/schemas/phoneNumbers"
+                },
+                {
+                  "$ref": "#/components/schemas/paymentDetails"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "membershipPaymentOutcome": {
+        "description": "Sucessful Operation",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "outcome": {
+                  "type": "string"
+                },
+                "membership": {
+                  "$ref": "#/components/schemas/membershipDetails"
+                },
+                "payment": {
+                  "$ref": "#/components/schemas/paymentDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "deconsolidationOutcome": {
+        "description": "Sucessful Operation",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "outcome": {
+                  "type": "string"
+                },
+                "originalMemberhsip": {
+                  "type": "object",
+                  "properties": {
+                    "membership": {
+                      "$ref": "#/components/schemas/membershipDetails"
+                    },
+                    "payment": {
+                      "$ref": "#/components/schemas/paymentDetails"
+                    }
+                  }
+                },
+                "removedMemberhsip": {
+                  "type": "object",
+                  "properties": {
+                    "membership": {
+                      "$ref": "#/components/schemas/membershipDetails"
+                    },
+                    "payment": {
+                      "$ref": "#/components/schemas/paymentDetails"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "literatureOutcome": {
+        "description": "Sucessful Operation",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "outcome": {
+                  "type": "string"
+                },
+                "literature": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/literatureItem"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "MemberExists": {
+        "description": "The specified resource was not found"
+      },
+      "MultiplePartner": {
+        "description": "The specified resource was not found"
+      },
+      "AlreadyCovered": {
+        "description": "The specified resource was not found"
+      },
+      "PaymentFailed": {
+        "description": "The specified resource was not found"
+      },
+      "NotFound": {
+        "description": "The specified resource was not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Unauthorized",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "InvalidData": {
+        "description": "Data entered was invalid",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
